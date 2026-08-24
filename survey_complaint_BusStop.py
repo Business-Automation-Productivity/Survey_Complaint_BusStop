@@ -81,7 +81,7 @@ def add_watermark(image_bytes, stop_name):
 FOLDER_ID = "1DjtLxgyQXwgjq_N6I_-rtYcBcnWhzMGp"
 CLIENT_SECRETS_FILE = "client_secrets2.json"
 SCOPES = ["https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/spreadsheets"]
-REDIRECT_URI = "https://bus-stop-survey-99f8wusughejfcfvrvxmyl.streamlit.app/"
+REDIRECT_URI = "https://surveycomplaintbusstop-dghuh3zeaibrappvjjrxxlp.streamlit.app/"
 
 def save_credentials(credentials):
     with open("token.pickle", "wb") as token: pickle.dump(credentials, token)
