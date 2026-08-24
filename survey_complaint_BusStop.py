@@ -59,7 +59,7 @@ def add_watermark(image_bytes, stop_name):
     w, h = img.size
     font_scale = int(w * 0.16) 
     now = datetime.now(KL_TZ)
-    time_str = now.strftime("%I:%M %p")
+    time_str = now.strftime("%I:%M %p")as
     info_str = f"{now.strftime('%d/%m/%y')} | {stop_name.upper()}"
     try:
         font_main = ImageFont.truetype("arialbd.ttf", font_scale)
@@ -81,7 +81,7 @@ def add_watermark(image_bytes, stop_name):
 FOLDER_ID = "1DjtLxgyQXwgjq_N6I_-rtYcBcnWhzMGp"
 CLIENT_SECRETS_FILE = "client_secrets2.json"
 SCOPES = ["https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/spreadsheets"]
-REDIRECT_URI = "https://bus-stop-survey-99f8wusughejfcfvrvxmyl.streamlit.app/"
+REDIRECT_URI = "https://surveycomplaintbusstop-dghuh3zeaibrappvjjrxxlp.streamlit.app/"
 
 def save_credentials(credentials):
     with open("token.pickle", "wb") as token: pickle.dump(credentials, token)
@@ -318,3 +318,30 @@ if st.button("Submit Survey"):
                 st.session_state.responses = {q: None for q in all_questions}
                 time.sleep(2); st.rerun()
             except Exception as e: st.error(f"Error: {e}")
+from datetime import datetime
+from io import BytesIOfrom datetime import datetime
+from io import BytesIO
+import mimetypes
+import time
+import os
+import pickle
+import re
+from urllib.parse import urlencode
+from PIL import Image, ImageDraw, ImageFont
+import pytz 
+
+# Essential Google API Imports
+from google_auth_oauthlib.flow import Flow
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+from google.auth.transport.requests import Request
+
+# --------- Timezone & Page Setup ---------
+KL_TZ = pytz.timezone('Asia/Kuala_Lumpur')
+st.set_page_config(page_title="Bus Stop Survey", layout="wide")
+
+# --------- 2. HEARTBEAT & KEEP ALIVE ---------
+def keep_alive():
+    """Keeps the session state active and logs activity"""
+    if "heartbeat" not in st.session_state:
+        st.session_state.heartbeat = time.time()
