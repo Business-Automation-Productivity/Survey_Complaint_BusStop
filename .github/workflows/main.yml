@@ -19,16 +19,15 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install playwright playwright-stealth
+          pip install playwright
           playwright install chromium
 
-      - name: Run Human-Like Stealth Session
+      - name: Run Human-Like Session
         run: |
           python - <<EOF
           import time
           import random
           from playwright.sync_api import sync_playwright
-          from playwright_stealth import stealth_sync
 
           def run_session():
               with sync_playwright() as p:
@@ -51,8 +50,14 @@ jobs:
                       has_touch=False
                   )
                   
+                  # Native script override to hide automation flags without extra package dependencies
+                  context.add_init_script("""
+                      Object.defineProperty(navigator, 'webdriver', {
+                          get: () => undefined
+                      });
+                  """)
+                  
                   page = context.new_page()
-                  stealth_sync(page)
                   
                   print("🚀 Navigating to Streamlit app (Waking up server)...")
                   
