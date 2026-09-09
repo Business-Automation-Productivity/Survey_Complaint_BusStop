@@ -61,7 +61,7 @@ jobs:
                   
                   try:
                       # Navigate to your app
-                      page.goto("https://bus-stop-survey-dpl6qeby3stuvpiexjhovk.streamlit.app/",
+                      page.goto("https://surveycomplaintbusstop-dghuh3zeaibrappvjjrxxlp.streamlit.app/",
                                  wait_until="load",
                                  timeout=120000)
                                             
