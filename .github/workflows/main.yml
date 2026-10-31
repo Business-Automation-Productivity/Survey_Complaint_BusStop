@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -22,14 +22,22 @@ jobs:
           pip install playwright
           playwright install chromium
 
-      - name: Run Human-Like Session
+      - name: Run Human-Like Session & Capture Screenshots
         run: |
           python - <<EOF
+          import os
           import time
           import random
           from playwright.sync_api import sync_playwright
 
           def run_session():
+              urls = [
+                  "https://surveycomplaintbusstop-dghuh3zeaibrappvjjrxxlp.streamlit.app/"
+              ]
+              
+              workspace_dir = os.getcwd()
+              print(f"Workspace directory: {workspace_dir}")
+
               with sync_playwright() as p:
                   browser = p.chromium.launch(
                       headless=True,
@@ -49,45 +57,69 @@ jobs:
                       is_mobile=False,
                       has_touch=False
                   )
-                  
-                  # Native script override to hide automation flags without extra package dependencies
+
+                  # Native script override to hide automation flags
                   context.add_init_script("""
                       Object.defineProperty(navigator, 'webdriver', {
                           get: () => undefined
                       });
                   """)
-                  
-                  page = context.new_page()
-                  
-                  print("🚀 Navigating to Streamlit app (Waking up server)...")
-                  
-                  try:
-                      page.goto("https://surveycomplaintbusstop-dghuh3zeaibrappvjjrxxlp.streamlit.app/",
-                                 wait_until="load",
-                                 timeout=120000)
-                                            
-                      print("⏳ Waiting for app content to render...")
-                      page.wait_for_selector("div", timeout=60000)
-                                            
-                      time.sleep(random.uniform(4, 7))
-                                            
-                      print("🖱️ Simulating human scroll activity...")
-                      page.mouse.wheel(0, random.randint(300, 600))
-                      time.sleep(random.uniform(2, 4))
-                      page.mouse.wheel(0, random.randint(-200, -100))
+
+                  for index, target_url in enumerate(urls, start=1):
+                      print(f"\n--- Processing Link {index}: {target_url} ---")
+                      page = context.new_page()
+                      screenshot_filename = f"streamlit_screenshot_{index}.png"
+                      screenshot_path = os.path.join(workspace_dir, screenshot_filename)
                       
-                      page.mouse.move(random.randint(100, 500), random.randint(100, 500))
-                      
-                      print(f"✅ Success! Current Title: {page.title()}")
-                                            
-                      time.sleep(25)
-                      
-                  except Exception as e:
-                      print(f"❌ Error: {str(e)}")
-                      print("DEBUG: Current Page Title was:", page.title())
-                  finally:
-                      browser.close()
+                      try:
+                          print("🚀 Navigating to Streamlit app (Waking up server)...")
+                          page.goto(target_url, wait_until="load", timeout=120000)
+                          
+                          print("⏳ Waiting for app content to render...")
+                          page.wait_for_selector("div", timeout=60000)
+                          
+                          time.sleep(random.uniform(4, 7))
+                          
+                          print("🖱️ Simulating human scroll and mouse activity...")
+                          page.mouse.wheel(0, random.randint(300, 600))
+                          time.sleep(random.uniform(2, 4))
+                          page.mouse.wheel(0, random.randint(-200, -100))
+                          
+                          page.mouse.move(random.randint(100, 500), random.randint(100, 500))
+                          
+                          print(f"✅ Success! Current Title: {page.title()}")
+                          
+                          dwell_time = random.uniform(25.0, 45.0)
+                          print(f"Holding active session for {dwell_time:.2f} seconds...")
+                          time.sleep(dwell_time)
+
+                          page.screenshot(path=screenshot_path, full_page=False)
+                          print(f"Screenshot saved to {screenshot_path}")
+
+                      except Exception as e:
+                          print(f"❌ Error on link {index}: {str(e)}")
+                          try:
+                              print("DEBUG: Current Page Title was:", page.title())
+                          except:
+                              pass
+                          try:
+                              page.screenshot(path=screenshot_path, full_page=False)
+                              print(f"Fallback screenshot saved to {screenshot_path}")
+                          except Exception as inner_e:
+                              print(f"Could not save fallback screenshot: {inner_e}")
+                      finally:
+                          page.close()
+
+                  browser.close()
 
           if __name__ == "__main__":
               run_session()
           EOF
+
+      - name: Upload Screenshots as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: streamlit-screenshots
+          path: streamlit_screenshot_*.png
+          retention-days: 3
+          if-no-files-found: ignore
