@@ -312,7 +312,7 @@ if st.button("Submit Survey"):
                 while len(header) < 30: header.append("")
                 header.insert(30, "Speed"); header.insert(33, "BC ID")
 
-                append_row(find_or_create_gsheet("survey_responses", FOLDER_ID), row, header)
+                append_row(find_or_create_gsheet("survey_responses_bc refuse to take drop passanger observation", FOLDER_ID), row, header)
                 st.success("Submitted!")
                 st.session_state.photos, st.session_state.videos = [], []
                 st.session_state.responses = {q: None for q in all_questions}
